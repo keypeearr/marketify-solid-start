@@ -4,6 +4,8 @@ import {
   UserValidationError,
 } from "../errors/userErrors";
 import { userRepository } from "../repositories/userRepository";
+import { hashPassword } from "../utilities/password";
+import { EnvMissingError } from "../errors/envErrors";
 
 export const authService = {
   async login() {},
@@ -27,14 +29,17 @@ export const authService = {
 
     let user;
     try {
+      const hashedPassword = await hashPassword(password);
+
       const createdUser = await userRepository.createUser({
         username,
-        password,
+        password: hashedPassword,
       });
       user = {
         ...createdUser,
       };
     } catch (err) {
+      if (err instanceof EnvMissingError) throw err;
       if (err instanceof UserAlreadyExistsError) throw err;
 
       throw err;
