@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { UserCreateInput } from "../../generated/prisma/models/User";
 
 const usernameSchema = z
   .string()
@@ -25,10 +26,21 @@ export const signupSchema = z
     password: passwordSchema,
     confirmPassword: passwordSchema,
   })
-  .refine((data) => data.password !== data.confirmPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 
+const userSchema = z.object({
+  id: z.string(),
+  username: usernameSchema,
+  password: passwordSchema,
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+const userDtoSchema = userSchema.omit({ password: true });
+
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type SignupSchema = z.infer<typeof signupSchema>;
+export type UserDTO = z.infer<typeof userDtoSchema>;
